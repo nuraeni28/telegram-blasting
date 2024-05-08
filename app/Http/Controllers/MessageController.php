@@ -13,35 +13,38 @@ class MessageController extends Controller
 {
     public function blastMessage(Request $request)
     {
-        $requestData = $request->json()->all(); // Mendapatkan semua data JSON dari permintaan
+        $requestData = $request->json()->all(); //get the all request
         $messages = [];
+        $success = true;
 
-        // Loop melalui setiap permintaan dan siapkan data untuk mendorong ke antrian
+        // Loop data
         foreach ($requestData as $data) {
             $messageText = $data['message'];
             $priority = $data['priority'];
             $usernames = $data['usernames'];
 
             foreach ($usernames as $username) {
-                // Simpan pesan ke dalam tabel Message
+                // save to db
                 $message = new Message();
                 $message->message = $messageText;
                 $message->username = $username;
-                $message->priority = $priority; // Anda dapat menentukan prioritas di sini jika diperlukan
+                $message->priority = $priority;
                 $message->save();
 
-                // Tambahkan pesan ke dalam daftar pesan
+                // Tadd the message to array message
                 $messages[] = $message;
             }
         }
 
-        // Mendorong pekerjaan ke antrian untuk setiap pesan
+        // push the message to the queue
         foreach ($messages as $message) {
             Queue::push(new SendTelegramMessage($message->id));
         }
 
         return response()->json([
-            'message' => 'Messages successfully pushed to queue.',
+            'message' => 'Messages successfully sent.',
+            'success' => $success,
+            'data' => $messages,
         ]);
     }
 }
