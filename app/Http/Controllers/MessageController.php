@@ -6,62 +6,42 @@ use Illuminate\Http\Request;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use App\Models\Message;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
+use App\Jobs\SendTelegramMessage;
 
 class MessageController extends Controller
 {
     public function blastMessage(Request $request)
     {
-        $requestData = $request->json()->all(); // get all JSON data from JSON
-        $messageText = $requestData['message'];
-        $usernames = $requestData['usernames'];
+        $requestData = $request->json()->all(); // Mendapatkan semua data JSON dari permintaan
+        $messages = [];
 
-        $successCount = 0;
-        $failedUsernames = [];
+        // Loop melalui setiap permintaan dan siapkan data untuk mendorong ke antrian
+        foreach ($requestData as $data) {
+            $messageText = $data['message'];
+            $priority = $data['priority'];
+            $usernames = $data['usernames'];
 
-        foreach ($usernames as $username) {
-            // get chat_id with telegram username
-            $chatId = $this->getChatIdByUsername($username);
-
-            if ($chatId) {
-                // save in database
+            foreach ($usernames as $username) {
+                // Simpan pesan ke dalam tabel Message
                 $message = new Message();
                 $message->message = $messageText;
                 $message->username = $username;
+                $message->priority = $priority; // Anda dapat menentukan prioritas di sini jika diperlukan
                 $message->save();
-                // send message to client
-                Telegram::sendMessage([
-                    'chat_id' => $chatId,
-                    'text' => $messageText,
-                ]);
-                $successCount++;
-            } else {
-                $failedUsernames[] = $username;
+
+                // Tambahkan pesan ke dalam daftar pesan
+                $messages[] = $message;
             }
         }
 
-        if ($successCount > 0) {
-            return response()->json([
-                'message' => 'Message successfully sent to ' . $successCount . ' users',
-                'failed_usernames' => $failedUsernames,
-            ]);
-        } else {
-            return response()->json(['message' => 'Message failed to send to all users'], 404);
-        }
-    }
-    private function getChatIdByUsername($username)
-    {
-        // Lakukan request ke API Telegram untuk mendapatkan update
-        $response = Http::get('https://api.telegram.org/bot6868575174:AAEsXXhaaXFZ-oYL7yYWcztwuya5EaXp7cc/getUpdates');
-
-        $responseData = $response->json();
-
-        // Cari chat_id berdasarkan username
-        foreach ($responseData['result'] as $result) {
-            if (isset($result['message']['from']['username']) && $result['message']['from']['username'] === $username) {
-                return $result['message']['chat']['id'];
-            }
+        // Mendorong pekerjaan ke antrian untuk setiap pesan
+        foreach ($messages as $message) {
+            Queue::push(new SendTelegramMessage($message->id));
         }
 
-        return null; // Jika username tidak ditemukan
+        return response()->json([
+            'message' => 'Messages successfully pushed to queue.',
+        ]);
     }
 }
