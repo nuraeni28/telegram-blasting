@@ -66,7 +66,7 @@ class MessageController extends Controller
         }
 
         return response()->json([
-            'message' => 'Messages sent to queue successfully.',
+            'message' => 'Messages successfully to sent.',
             'success' => $success,
             'data' => $messages,
         ]);
