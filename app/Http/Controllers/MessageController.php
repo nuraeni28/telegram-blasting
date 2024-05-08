@@ -32,10 +32,10 @@ class MessageController extends Controller
                 $chatIdResponse = $this->getChatIdByUsername($username);
 
                 // Check if chat ID retrieval was successful
-                if ($chatIdResponse) {
+                if ($chatIdResponse !== null) {
                     // Check if the response was successful
-                    if ($chatIdResponse->successful()) {
-                        $chatId = $chatIdResponse->json('data.chat_id');
+                    if (is_int($chatIdResponse)) {
+                        $chatId = $chatIdResponse;
                         Queue::push(new SendTelegramMessage($message->id, $chatId));
                     } else {
                         // Handle the case where chat ID was not found
