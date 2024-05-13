@@ -48,7 +48,7 @@ Example :
 {
   "message" : string,
   "success" : bool,
-  "data"    : string
+  "data"    : array
 }
 ```
 
