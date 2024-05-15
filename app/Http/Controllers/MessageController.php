@@ -36,7 +36,7 @@ class MessageController extends Controller
                     // Check if the response was successful
                     if (is_int($chatIdResponse)) {
                         $chatId = $chatIdResponse;
-                        Queue::push(new SendTelegramMessage($message->id, $chatId));
+                        dispatch(new SendTelegramMessage($message->id, $chatId));
                     } else {
                         // Handle the case where chat ID was not found
                         $success = false;
