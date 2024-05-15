@@ -24,7 +24,7 @@ $ php artisan queue:work
 ## Send Blasting With API 
 
 ```http
-GET /api/blast-message
+POST /api/blast-message
 ```
 - Body
 Example :
