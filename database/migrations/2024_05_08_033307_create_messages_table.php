@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('username');
             $table->text('message');
             $table->text('priority');
-            $table->text('status');
+            $table->text('status')->nullable();
             $table->timestamps();
         });
     }
