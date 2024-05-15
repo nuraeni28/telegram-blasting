@@ -4,8 +4,12 @@ The Telegram Blasting System using Laravel and Library (irazasyed/telegram-bot-s
 
 - Run the command on the terminal
 ```bash
+$ php artisan migrate
+```
+```bash
 $ php artisan serve
 ```
+
 - Run the command on the other terminal
 ```bash
 $ php artisan queue:work
@@ -20,7 +24,7 @@ $ php artisan queue:work
 ## Send Blasting With API 
 
 ```http
-GET /api/blast-message
+POST /api/blast-message
 ```
 - Body
 Example :
@@ -44,7 +48,7 @@ Example :
 {
   "message" : string,
   "success" : bool,
-  "data"    : string
+  "data"    : array
 }
 ```
 
