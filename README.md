@@ -1,5 +1,5 @@
 ## Running Ngrok
-<pre>Ngrok is used to retrieve user data that is connected to the telegram bot in realtime.</pre>
+Ngrok is used to retrieve user data that is connected to the telegram bot in realtime.<br/>
 Run ngrok according to the OS you have : https://ngrok.com/docs/getting-started/ 
 
 ## Configured The Telegram Blasting System
