@@ -18,7 +18,7 @@ $ php artisan queue:work
 ## Connect To Telegram Bot
 - Make sure the telegram user has a username (ex : @nen_28)
 - Add bot (@swift28_bot) and click start to start blasting message. Like the picture below
-![Screenshot_1](https://github.com/nuraeni28/telegram-blasting/assets/68740508/efcd2f41-4121-4b86-b015-f51f062b07cb)
+![Uploading Screenshot_2.png…]
 
 
 ## Send Blasting With API 
