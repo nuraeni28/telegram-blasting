@@ -1,9 +1,10 @@
 ## Running Ngrok
-Run ngrok according to the OS you have :
-https://ngrok.com/docs/getting-started/ 
+```Ngrok is used to retrieve user data that is connected to the telegram bot in realtime.
+```
+Run ngrok according to the OS you have : https://ngrok.com/docs/getting-started/ 
 
 ## Configured The Telegram Blasting System
-change TELEGRAM_WEBHOOK_URL with your WEBHOOK_URL
+change TELEGRAM_WEBHOOK_URL to the WEBHOOK_URL you get when running Ngrok. Example (https://ab84-125-162-211-162.ngrok-free.app)
 ## .env 
 TELEGRAM_WEBHOOK_URL= 'WEBHOOK_URL/api/swiftbot/webhook'
 
