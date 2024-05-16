@@ -5,12 +5,49 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use App\Models\Message;
+use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use App\Jobs\SendTelegramMessage;
 
 class MessageController extends Controller
 {
+    public function setWebHook()
+    {
+        try {
+            // Ambil URL webhook dari environment variable
+            $webhookUrl = 'https://298c-125-162-210-113.ngrok-free.app/api/swiftbot/webhook';
+
+            // Cek apakah URL webhook ada dan valid
+            if ($webhookUrl) {
+                // Coba mengatur webhook dengan URL yang diambil dari environment variable
+                $response = Telegram::setWebhook(['url' => $webhookUrl]);
+
+                // Tampilkan respons dari API Telegram
+                dd($response);
+            } else {
+                // Jika URL webhook tidak ada atau tidak valid
+                echo 'URL webhook tidak valid.';
+            }
+        } catch (\Exception $e) {
+            // Tangani pengecualian
+            echo 'Terjadi kesalahan: ' . $e->getMessage();
+        }
+    }
+    public function commandHandlerWebHook()
+    {
+        $updates = Telegram::commandsHandler(true);
+        $chat_id = $updates->getChat()->getId();
+        $username = $updates->getChat()->getFirstName();
+
+        if (strtolower($updates->getMessage()->getText() === 'halo')) {
+            return Telegram::sendMessage([
+                'chat_id' => $chat_id,
+                'text' => 'Halo' . $username,
+            ]);
+        }
+    }
+
     public function blastMessage(Request $request)
     {
         $requestData = $request->json()->all(); //get all requests

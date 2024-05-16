@@ -82,7 +82,7 @@ return [
     |
     */
 
-    'locale' => 'en',
+    'locale' => 'in',
 
     /*
     |--------------------------------------------------------------------------
@@ -181,6 +181,7 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
+        Telegram\Bot\Laravel\TelegramServiceProvider::class,
 
         /*
          * Package Service Providers...
@@ -209,6 +210,7 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
+    'Telegram' => Telegram\Bot\Laravel\TelegramServiceProvider::class,
         // 'ExampleClass' => App\Example\ExampleClass::class,
     ])->toArray(),
 
