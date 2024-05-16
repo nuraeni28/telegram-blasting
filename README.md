@@ -1,5 +1,5 @@
 ## Configured The Telegram Blasting System
-.env 
+## .env 
 change TELEGRAM_WEBHOOK_URL with your WEBHOOK_URL
 
 TELEGRAM_WEBHOOK_URL= 'WEBHOOK_URL/api/swiftbot/webhook'
