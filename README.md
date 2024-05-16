@@ -1,7 +1,10 @@
-## Configured The Telegram Blasting System
-## .env 
-change TELEGRAM_WEBHOOK_URL with your WEBHOOK_URL
+## Running Ngrok
+Run ngrok according to the OS you have :
+https://ngrok.com/docs/getting-started/ 
 
+## Configured The Telegram Blasting System
+change TELEGRAM_WEBHOOK_URL with your WEBHOOK_URL
+## .env 
 TELEGRAM_WEBHOOK_URL= 'WEBHOOK_URL/api/swiftbot/webhook'
 
 ## Step Running The Telegram Blasting System
