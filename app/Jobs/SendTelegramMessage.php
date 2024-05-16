@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Message;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -10,7 +11,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Telegram\Bot\Laravel\Facades\Telegram;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class SendTelegramMessage implements ShouldQueue
@@ -34,53 +34,39 @@ class SendTelegramMessage implements ShouldQueue
         Log::info('Processing queue job: ' . $this->messageId);
 
         // Ambil pesan dengan prioritas tinggi jika tersedia
-        $highPriorityMessage = Message::where('priority', 'high')->whereNull('status')->orderBy('created_at', 'asc')->first();
+        $highPriorityMessages = Message::where('priority', 'high')->whereNull('status')->orderBy('created_at', 'asc')->get();
 
         // Jika ada pesan dengan prioritas tinggi, kirim pesan tersebut ke Telegram
-        if ($highPriorityMessage) {
-            $this->sendMessage($highPriorityMessage);
-            $this->updateMessageStatus($highPriorityMessage); // Tandai pesan sebagai "done"
-            Log::info('High priority message sent: ' . $highPriorityMessage->id);
-        } else {
-            // Jika tidak ada pesan dengan prioritas tinggi, coba kirim pesan dengan prioritas rendah
-            $lowPriorityMessage = Message::where('priority', 'low')->whereNull('status')->orderBy('created_at', 'asc')->first();
+        foreach ($highPriorityMessages as $message) {
+            $user = User::where('username', $message->username)->first();
+            if ($user && $user->chatId) {
+                $this->sendMessage($message, $user->chatId);
+                $this->updateMessageStatus($message); // Tandai pesan sebagai "done"
+                Log::info('High priority message sent: ' . $message->id);
+            }
+        }
 
-            if ($lowPriorityMessage) {
-                $this->sendMessage($lowPriorityMessage);
-                $this->updateMessageStatus($lowPriorityMessage); // Tandai pesan sebagai "done"
-                Log::info('Low priority message sent: ' . $lowPriorityMessage->id);
+        // Jika tidak ada pesan dengan prioritas tinggi, coba kirim pesan dengan prioritas rendah
+        $lowPriorityMessages = Message::where('priority', 'low')->whereNull('status')->orderBy('created_at', 'asc')->get();
+
+        foreach ($lowPriorityMessages as $message) {
+            $user = User::where('username', $message->username)->first();
+            if ($user && $user->chatId) {
+                $this->sendMessage($message, $user->chatId);
+                $this->updateMessageStatus($message); // Tandai pesan sebagai "done"
+                Log::info('Low priority message sent: ' . $message->id);
             }
         }
     }
 
-    private function sendMessage($message)
+    private function sendMessage($message, $chatId)
     {
-        // Kirim pesan ke Telegram
-        $chatId = $this->getChatIdByUsername($message->username);
-        if ($chatId) {
-            Telegram::sendMessage([
-                'chat_id' => $chatId,
-                'text' => $message->message,
-            ]);
-        }
+        Telegram::sendMessage([
+            'chat_id' => $chatId,
+            'text' => $message->message,
+        ]);
     }
 
-    private function getChatIdByUsername($username)
-    {
-        // Lakukan request ke API Telegram untuk mendapatkan update
-        $response = Http::get('https://api.telegram.org/bot6868575174:AAEsXXhaaXFZ-oYL7yYWcztwuya5EaXp7cc/getUpdates');
-
-        $responseData = $response->json();
-
-        // Cari chat_id berdasarkan username
-        foreach ($responseData['result'] as $result) {
-            if (isset($result['message']['from']['username']) && $result['message']['from']['username'] === $username) {
-                return $result['message']['chat']['id'];
-            }
-        }
-
-        return null; // Jika username tidak ditemukan
-    }
     private function updateMessageStatus($message)
     {
         // Perbarui status pesan menjadi "done"

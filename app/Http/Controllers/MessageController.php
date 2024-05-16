@@ -15,22 +15,18 @@ class MessageController extends Controller
     public function setWebHook()
     {
         try {
-            // Ambil URL webhook dari environment variable
-            $webhookUrl = 'https://298c-125-162-210-113.ngrok-free.app/api/swiftbot/webhook';
+            // URL webhook
+            $webhookUrl = 'https://ab84-125-162-211-162.ngrok-free.app/api/swiftbot/webhook';
 
-            // Cek apakah URL webhook ada dan valid
+            // check webhookUrl valid or not
             if ($webhookUrl) {
-                // Coba mengatur webhook dengan URL yang diambil dari environment variable
                 $response = Telegram::setWebhook(['url' => $webhookUrl]);
 
-                // Tampilkan respons dari API Telegram
                 dd($response);
             } else {
-                // Jika URL webhook tidak ada atau tidak valid
                 echo 'URL webhook tidak valid.';
             }
         } catch (\Exception $e) {
-            // Tangani pengecualian
             echo 'Terjadi kesalahan: ' . $e->getMessage();
         }
     }
@@ -66,19 +62,15 @@ class MessageController extends Controller
                 $message->priority = $priority;
                 $message->save();
 
-                $chatIdResponse = $this->getChatIdByUsername($username);
+                $user = User::where('username', $username)->first();
 
                 // Check if chat ID retrieval was successful
-                if ($chatIdResponse !== null) {
+                if ($user !== null && is_int($user->chatId)) {
                     // Check if the response was successful
-                    if (is_int($chatIdResponse)) {
-                        $chatId = $chatIdResponse;
-                        dispatch(new SendTelegramMessage($message->id, $chatId));
-                    } else {
-                        // Handle the case where chat ID was not found
-                        $success = false;
-                        $failedUsernames[] = $username; // Store the failed username
-                    }
+
+                    $chatId = $user->chatId;
+
+                    dispatch(new SendTelegramMessage($message->id));
                 } else {
                     // Handle the case where the HTTP request failed
                     $success = false;
@@ -107,26 +99,5 @@ class MessageController extends Controller
             'success' => $success,
             'data' => $messages,
         ]);
-    }
-    private function getChatIdByUsername($username)
-    {
-        // Lakukan request ke API Telegram untuk mendapatkan update
-        $response = Http::get('https://api.telegram.org/bot6868575174:AAEsXXhaaXFZ-oYL7yYWcztwuya5EaXp7cc/getUpdates');
-
-        // Check if the response is successful
-        if ($response->successful()) {
-            $responseData = $response->json();
-
-            // Cari chat_id berdasarkan username
-            foreach ($responseData['result'] as $result) {
-                if (isset($result['message']['from']['username']) && $result['message']['from']['username'] === $username) {
-                    return $result['message']['chat']['id'];
-                }
-            }
-        } else {
-            return null; // Return null if HTTP request fails
-        }
-
-        return null; // Jika username tidak ditemukan
     }
 }
